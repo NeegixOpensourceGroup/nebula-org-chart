@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>组织架构图插件</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.org-chart ul {
+  margin:0 auto;
+  display: flex; /* 使用flexbox */
+  padding-top: 20px;
+  position: relative;
+  transition: all 0.5s;
+}
+
+.org-chart li {
+  flex-shrink: 0;
+  list-style-type: none;
+  text-align: center;
+  position: relative;
+  padding: 20px 5px 0 5px;
+  transition: all 0.5s;
+}
+
+/* 横向的连接线 */
+.org-chart li::before, .org-chart li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 20px;
+  border-top: 2px solid #ccc;
+}
+
+.org-chart li::before {
+  right: 50%;
+}
+
+.org-chart li::after {
+  left: 50%;
+  border-left: 2px solid #ccc; /* 添加竖线以防右边的横线缺失 */
+}
+
+/* 没有兄弟节点时隐藏连接线 */
+.org-chart li:only-child::after, .org-chart li:only-child::before {
+  display: none;
+}
+
+/* 去除最顶层父节点的上方线 */
+.org-chart li:only-child {
+  padding-top: 0;
+}
+
+/* 父子节点之间的竖向连接线 */
+.org-chart li ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 2px solid #ccc;
+  width: 0;
+  height: 20px;
+}
+
+/* 节点样式 */
+.org-chart div {
+  border: 2px solid #ccc;
+  padding: 10px;
+  display: inline-block;
+  background: #fff;
+  transition: all 0.5s;
+  cursor: pointer; /* 鼠标悬停效果 */
+}
+
+/* 鼠标悬停效果 */
+.org-chart div:hover {
+  background: #e0e0e0;
+  border-color: #94a0b4;
+}
+
+.org-chart li:first-child::before {
+  border-top: none;
+}
+.org-chart li:last-child::after {
+  border-top: none;
+}
+
+.org-chart .node {
+  position: relative;
+}
+
+/* 按钮样式 */
+.org-chart .toggle-btn {
+  padding: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  margin: auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ccc; /* 按钮背景色 */
+}
+</style>
+</head>
+<body>
+
+<div id="org-chart-container" class="org-chart"></div>
+
+<script>
+(function($) {
+  $.fn.orgChart = function(data) {
+    const createNode = (node) => {
+      let $li = $('<li></li>');
+      let $div = $('<div class="node"></div>').text(node.name);
+      if(node.children){
+        let $toggleBtn = $('<div class="toggle-btn"></div>');
+        $div.append($toggleBtn);
+      }
+      $li.append($div);
+
+      if (node.children && node.children.length) {
+        let $ul = $('<ul></ul>');
+        node.children.forEach(child => {
+          $ul.append(createNode(child));
+        });
+        $li.append($ul);
+      }
+
+      return $li;
+    };
+
+    // 初始化
+    const $orgChart = $('<ul></ul>');
+    data.forEach(node => {
+      $orgChart.append(createNode(node));
+    });
+
+    // 插入到容器
+    this.append($orgChart);
+
+    // 点击按钮时的事件处理
+    this.on('click', '.toggle-btn', function(event) {
+      event.stopPropagation(); // 防止事件冒泡
+      const $ul = $(this).parent().siblings('ul'); // 获取该按钮的兄弟 ul
+      $ul.slideToggle(100); // 切换直接子节点的显示
+    });
+
+    return this; // 支持链式调用
+  };
+})(jQuery);
+
+// 示例数据
+const orgData = [
+  {
+    name: "Nebula Corp.",
+    children: [
+      {
+        name: "VP Marketing",
+        children: [
+          { name: "Marketing Manager 1" },
+          { name: "Marketing Manager 2" },
+          { name: "Marketing Manager 3" }
+        ]
+      },
+      {
+        name: "VP Sales",
+        children: [
+          { name: "Sales Manager 1",
+            children: [
+              { name: "Sales Manager 1-1" },
+              { name: "Sales Manager 1-2",
+                children: [
+                  { name: "Sales Manager 1-1-1",
+                    children: [
+                      {
+                        name: "Sales Manager 1-1-1",
+                        children: [
+                          { name: "Sales Manager 1",
+                            children: [
+                              { name: "Sales Manager 1-1-1" },
+                              { name: "Sales Manager 1-1-1" },
+                              { name: "Sales Manager 1-1-1" },
+                              { name: "Sales Manager 1-1-1" },
+                              { name: "Sales Manager 1-1-1" },
+                              { name: "Sales Manager 1-1-",
+                                children: [
+                                  { name: "Sales Manager 1-1-1" },
+                                  { name: "Sales Manager 1-1-1" },
+                                  { name: "Sales Manager 1-1-1" },
+                                  { name: "Sales Manager 1-1-1" },
+                                  { name: "Sales Manager 1-1-1" },
+                                  { name: "Sales Manager 1-1-1",
+                                    children: [
+                                      { name: "Sales Manager 1-1-1" },
+                                    ]
+                                   },
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                   },
+                  { name: "Sales Manager 1-1-1" },
+                  { name: "Sales Manager 1-1-1" },
+                  { name: "Sales Manager 1-1-1" },
+                  { name: "Sales Manager 1-1-1" },
+                  { name: "Sales Manager 1-1-1" },
+                  { name: "Sales Manager 1-1-1" },
+                  { name: "Sales Manager 1-1-1" },
+                ]
+               }
+            ]
+          },
+          { name: "Sales Manager 2" },
+          { name: "Sales Manager 3" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" },
+          { name: "Sales Manager 4" }
+        ]
+      },
+      {
+        name: "VP Support",
+        children: [
+          { name: "Support Manager 1" },
+          { name: "Support Manager 2" }
+        ]
+      }
+    ]
+  }
+];
+
+// 初始化插件
+$(document).ready(function() {
+  $('#org-chart-container').orgChart(orgData)//.draggable();
+});
+</script>
+
+</body>
+</html>
