@@ -106,14 +106,15 @@
 .org-chart .toggle-btn {
   position: absolute;
   left: 50%; /* 将按钮的左侧与父元素的中间对齐 */
-  bottom: -8px; /* 向下偏移以显示在节点下方 */
+  bottom: -5px; /* 向下偏移以显示在节点下方 */
   transform: translateX(-50%); /* 调整到正中心 */
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #ccc; /* 按钮背景色 */
   cursor: pointer;
   border: 2px solid #94a0b4; /* 按钮边框 */
+  z-index: 9999;
 }
 
 </style>
