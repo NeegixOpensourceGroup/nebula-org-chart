@@ -17,7 +17,7 @@
 
 #### 插件截图
 
-![](https://gitee.com/kushu001/pic-go-images/raw/master/images/QQ_1728545744422.png)
+![](https://gitee.com/kushu001/pic-go-images/raw/master/images/QQ_1728874624426.png)
 
 大家可以根据自己的需求自行调整代码的样式
 
