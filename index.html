@@ -6,28 +6,25 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-}
+
 
 .org-chart ul {
-  margin:0 auto;
-  display: flex; /* 使用flexbox */
+  display: block; /* 取消 flex 布局 */
   padding-top: 20px;
   position: relative;
   transition: all 0.5s;
+  padding-left: 0; /* 去除默认的列表缩进 */
+  white-space: nowrap; /* 防止子节点换行 */
 }
-
 .org-chart li {
-  flex-shrink: 0;
   list-style-type: none;
   text-align: center;
   position: relative;
   padding: 20px 5px 0 5px;
   transition: all 0.5s;
+  display: inline-block; /* 将每个节点作为行内块元素排列 */
+  vertical-align: top;
 }
-
 /* 横向的连接线 */
 .org-chart li::before, .org-chart li::after {
   content: '';
@@ -37,26 +34,21 @@
   height: 20px;
   border-top: 2px solid #ccc;
 }
-
 .org-chart li::before {
   right: 50%;
 }
-
 .org-chart li::after {
   left: 50%;
   border-left: 2px solid #ccc; /* 添加竖线以防右边的横线缺失 */
 }
-
 /* 没有兄弟节点时隐藏连接线 */
 .org-chart li:only-child::after, .org-chart li:only-child::before {
   display: none;
 }
-
 /* 去除最顶层父节点的上方线 */
 .org-chart li:only-child {
   padding-top: 0;
 }
-
 /* 父子节点之间的竖向连接线 */
 .org-chart li ul::before {
   content: '';
@@ -67,47 +59,63 @@
   width: 0;
   height: 20px;
 }
-
+.org-chart  div.root {
+   border: 1px solid #ccc;
+   padding: 10px;
+   display: inline-block;
+   background: #cc9e14;
+   color: white;
+   font-weight:bold;
+   border-radius: 10px;
+   transition: all 0.5s;
+   cursor: pointer; /* 鼠标悬停效果 */
+   position: relative; /* 确保折叠按钮相对于该元素定位 */
+}
+.org-chart  div.root:hover{
+    background: #cb1010;
+}
 /* 节点样式 */
-.org-chart div {
-  border: 2px solid #ccc;
+.org-chart div.node {
+  border: 1px solid #ccc;
   padding: 10px;
   display: inline-block;
-  background: #fff;
+  background:#cc1414;
+  color: white;
+  border-radius: 10px;
   transition: all 0.5s;
   cursor: pointer; /* 鼠标悬停效果 */
+  position: relative; /* 确保折叠按钮相对于该元素定位 */
+  writing-mode: vertical-rl;
 }
-
+.org-chart div.node:hover{
+    background: #cc9e14;
+}
 /* 鼠标悬停效果 */
 .org-chart div:hover {
   background: #e0e0e0;
   border-color: #94a0b4;
 }
-
+/* 顶级和底部的横线移除 */
 .org-chart li:first-child::before {
   border-top: none;
 }
 .org-chart li:last-child::after {
   border-top: none;
 }
-
-.org-chart .node {
-  position: relative;
-}
-
 /* 按钮样式 */
 .org-chart .toggle-btn {
-  padding: 0;
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -5px;
-  margin: auto;
-  width: 10px;
-  height: 10px;
+  left: 50%; /* 将按钮的左侧与父元素的中间对齐 */
+  bottom: -8px; /* 向下偏移以显示在节点下方 */
+  transform: translateX(-50%); /* 调整到正中心 */
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #ccc; /* 按钮背景色 */
+  cursor: pointer;
+  border: 2px solid #94a0b4; /* 按钮边框 */
 }
+
 </style>
 </head>
 <body>
@@ -117,9 +125,9 @@
 <script>
 (function($) {
   $.fn.orgChart = function(data) {
-    const createNode = (node) => {
+    const createNode = (node, level) => {
       let $li = $('<li></li>');
-      let $div = $('<div class="node"></div>').text(node.name);
+      let $div = $(`<div class="${level === 0 ? 'root' : 'node'}"></div>`).text(node.name);
       if(node.children){
         let $toggleBtn = $('<div class="toggle-btn"></div>');
         $div.append($toggleBtn);
@@ -139,8 +147,10 @@
 
     // 初始化
     const $orgChart = $('<ul></ul>');
+    let level = 0;
     data.forEach(node => {
-      $orgChart.append(createNode(node));
+      $orgChart.append(createNode(node, level));
+      level++;
     });
 
     // 插入到容器
@@ -149,8 +159,10 @@
     // 点击按钮时的事件处理
     this.on('click', '.toggle-btn', function(event) {
       event.stopPropagation(); // 防止事件冒泡
-      const $ul = $(this).parent().siblings('ul'); // 获取该按钮的兄弟 ul
-      $ul.slideToggle(100); // 切换直接子节点的显示
+      const $ul = $(this).closest('li').find('ul:first'); // 获取子节点的 ul
+      if ($ul.length) {
+        $ul.slideToggle(100); // 切换子节点的显示状态
+      }
     });
 
     return this; // 支持链式调用
@@ -246,6 +258,8 @@ const orgData = [
     ]
   }
 ];
+
+
 
 // 初始化插件
 $(document).ready(function() {
